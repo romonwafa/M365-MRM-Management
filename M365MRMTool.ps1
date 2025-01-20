@@ -102,21 +102,22 @@ function Check-MailboxUsage {
         [string]$Mailbox
     )
     do {
+        Write-Host ""
         Write-Host "Checking mailbox usage for '$Mailbox'..."
 
         # Get mailbox usage details
         $mailboxUsage = Get-MailboxStatistics -Identity $Mailbox
-        $archiveUsage = if ($mailboxUsage.ArchiveStatus -eq "Active") {
-            Get-MailboxStatistics -Identity $Mailbox -Archive | Select-Object -ExpandProperty TotalItemSize
-        } else {
-            "Archive mailbox is not enabled."
-        }
-
+        # Check if the archive mailbox is enabled
+        $archiveStats = Get-MailboxStatistics -Identity $Mailbox -Archive -ErrorAction Stop
         Write-Host "Mailbox Size: $($mailboxUsage.TotalItemSize)"
         Write-Host "Mailbox Item Count: $($mailboxUsage.ItemCount)"
+        Write-Host ""
+        Write-Output "Archive Mailbox Size: $($archiveStats.TotalItemSize)"
+        Write-Host "Archive Item Count: $($archiveStats.ItemCount)"
+        Write-Host ""
         Write-Host "Last Logon Time: $($mailboxUsage.LastLogonTime)"
         Write-Host "Last Logoff Time: $($mailboxUsage.LastLogoffTime)"
-        Write-Host "Archive Mailbox Size: $archiveUsage"
+        Write-Host ""
 
         # Prompt to recheck the same mailbox or return to the main menu
         $recheck = Read-Host "Do you want to recheck the same mailbox? (Y/N)"
